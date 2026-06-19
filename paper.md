@@ -1,9 +1,9 @@
 ---
-title: "Exact Rational Arithmetic via p-adic Hensel Codes: A Computation-Ready Framework Resolving the Ostrowski Gap"
-author: "Rowan Quni-Gudzinas (QNFO/QWAV)"
-date: "2026-06-19"
-version: "1.2.0"
-license: "QNFO Unified License Agreement (QNFO-ULA)"
+title: “Exact Rational Arithmetic via p-adic Hensel Codes: A Computation-Ready Framework Resolving the Ostrowski Gap”
+author: “Rowan Quni-Gudzinas (QNFO/QWAV)”
+date: “2026-06-19”
+version: “1.2.0”
+license: “QNFO Unified License Agreement (QNFO-ULA)”
 abstract: >
   All non-trivial absolute values on the rational numbers \mathbb{Q} complete to exactly one of two fields:
   the real numbers \mathbb{R} (Ostrowski, 1916) or the p-adic numbers \mathbb{Q}_p. Contemporary digital
@@ -20,13 +20,15 @@ abstract: >
   as an interactive web demonstration and as an open-source Python library. All artifacts are archived on Zenodo with a complete
   reproduction manifest.
 ---
+**Author:** Rowan Quni-Gudzinas | **Date:** 2026-06-18 | **License:** QNFO Unified License Agreement (QNFO-ULA)
+
 
 # 1. Introduction
 
 ## 1.1 The Ostrowski Gap
 
 In 1916, Alexander Ostrowski proved a theorem of profound consequence for all subsequent computation: every
-non-trivial absolute value on the rational numbers $\mathbb{Q}$—every way of measuring "how large" a rational
+non-trivial absolute value on the rational numbers $\mathbb{Q}$—every way of measuring “how large” a rational
 number is—is equivalent to exactly the familiar real absolute value $|\cdot|_{\infty}$ or to one of the
 $p$-adic absolute values $|\cdot|_{p}$ for some prime $p$ [Ostrowski, 1916]. The completions of $\mathbb{Q}$
 under these absolute values yield the real numbers $\mathbb{R}$ and the $p$-adic numbers $\mathbb{Q}_p$,
@@ -111,7 +113,7 @@ and $p \nmid b$) is defined as:
 
 $$|x|_p = p^{-\nu}$$
 
-with $|0|_p = 0$. Under this metric, numbers are "small" if they are highly divisible by $p$—the opposite of
+with $|0|_p = 0$. Under this metric, numbers are “small” if they are highly divisible by $p$—the opposite of
 the real metric. The completion of $\mathbb{Q}$ under $|\cdot|_p$ yields the field $\mathbb{Q}_p$ of $p$-adic
 numbers. Every $p$-adic number has a unique expansion:
 
@@ -297,7 +299,7 @@ relevant operation.
 *Table 1: Extended Operations Summary*
 
 | Operation | Method | Complexity |
-|-----------|--------|------------|
+|———--|--------|------—---|
 | Valuation $v_p(r)$ | `valuation()`, `ord_p()` | $O(k)$ digit scan |
 | p-adic norm $\|r\|_p$ | `padic_norm()` | $O(k) + O(1)$ |
 | Unit check | `is_unit()` | $O(1)$ mod $p$ test |
@@ -407,7 +409,7 @@ The Bruhat-Tits tree provides three concrete benefits:
 1. **Fast comparison:** Two numbers can be compared by finding their LCA—an $O(\log n)$ operation in the
    tree depth, rather than $O(n)$ bit comparison of expanded integers.
 
-2. **Natural clustering:** Numbers that share a long common prefix in their $p$-adic expansion are "close"
+2. **Natural clustering:** Numbers that share a long common prefix in their $p$-adic expansion are “close”
    in the ultrametric and cluster together. Any finite hierarchical clustering (dendrogram) from
    data science embeds into the Bruhat-Tits tree [Bradley, 2007].
 
@@ -422,7 +424,7 @@ The Bruhat-Tits tree provides three concrete benefits:
 Table 1 summarizes the canonical $0.1 + 0.2$ comparison:
 
 | System | Result | Exact? |
-|--------|--------|--------|
+|——--|--------|--------|
 | Hensel (p=7, k=30) | $3/10 = 0.3$ (recovered) | ✓ EXACT |
 | IEEE 754 float64 | $0.30000000000000004$ | ✗ APPROXIMATE |
 
@@ -435,7 +437,7 @@ recovers $3/10$ uniquely.
 Accumulating $100{,}000$ ticks of $0.1$ seconds (approximately $2.78$ hours):
 
 | System | Accumulated | Expected | Error |
-|--------|-------------|----------|-------|
+|——--|------——-|------—-|-------|
 | Hensel | $10000/1 = 10000.0$ | $10000.0$ | $0$ |
 | Float64 | $9999.9999627...$ | $10000.0$ | $\approx 3.73 \times 10^{-5}$ |
 
@@ -455,7 +457,7 @@ Empirical benchmarks (Python 3.x CPython, single-threaded, p=7, k=30):
 *Table 2: Operation Timing (nanoseconds)*
 
 | Operation | Hensel (ns) | IEEE 754 (ns) | Ratio |
-|-----------|-------------|---------------|-------|
+|———--|------——-|------——---|-------|
 | Addition | 1,236 | 80 | 15.4× |
 | Multiplication | 1,471 | 61 | 24.2× |
 | Encode (1/10) | 1,751 | — | — |
@@ -466,7 +468,7 @@ Empirical benchmarks (Python 3.x CPython, single-threaded, p=7, k=30):
 *Table 3: Accumulation Error — Patriot Scenario*
 
 | Ticks | IEEE 754 Error | Hensel Error |
-|-------|---------------|--------------|
+|——-|------——---|------——--|
 | 100 | 1.42×10⁻¹⁴ | 0 (exact) |
 | 1,000 | 1.42×10⁻¹³ | 0 (exact) |
 | 10,000 | 1.82×10⁻¹² | 0 (exact) |
