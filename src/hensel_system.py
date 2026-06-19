@@ -263,6 +263,252 @@ class HenselCode:
     def __neg__(self) -> "HenselCode":
         return HenselCode((-self.code) % self.modulus, self.p, self.k)
 
+    # ─── p-adic Valuation and Norm ───────────────────────────────────────────
+
+    def valuation(self) -> int:
+        """
+        p-adic valuation v_p(r): the exponent of p dividing the numerator.
+        
+        For a rational r = a/b with p ∤ b, v_p(r) = v_p(a).
+        Found by inspecting the p-adic digit expansion: the valuation is
+        the index of the first non-zero digit.
+        
+        Returns k (precision) if the code is 0, meaning v_p(r) ≥ k.
+        """
+        if self.code == 0:
+            return self.k  # valuation ≥ k, precision-limited
+        for i, d in enumerate(self.digits()):
+            if d != 0:
+                return i
+        return self.k  # Should not reach here
+
+    def ord_p(self) -> int:
+        """Alias for valuation() — the p-adic order of the encoded rational."""
+        return self.valuation()
+
+    def padic_norm(self) -> float:
+        """
+        p-adic absolute value: |r|_p = p^{-v_p(r)}.
+        
+        This is an ultrametric norm: it satisfies the strong triangle inequality
+        |x + y|_p ≤ max(|x|_p, |y|_p).
+        """
+        return float(self.p ** (-self.valuation()))
+
+    def is_unit(self) -> bool:
+        """
+        Check if this is a p-adic unit (i.e., not divisible by p).
+        
+        A Hensel code is a unit in ℤ/pᵏℤ if its value is coprime to p.
+        This is equivalent to v_p(code) = 0 (first p-adic digit ≠ 0).
+        """
+        return self.code % self.p != 0
+
+    # ─── Prime Exponent Vector ───────────────────────────────────────────────
+
+    def pev(self) -> Dict[int, int]:
+        """
+        Prime Exponent Vector: the full prime factorization of the recovered rational.
+        
+        Returns a dictionary {prime: exponent} representing:
+            r = ∏ p_i^{e_i}
+        
+        where positive exponents are in the numerator and negative in the denominator.
+        Raises ValueError if the rational cannot be recovered.
+        """
+        rational = self.to_rational()
+        if rational is None:
+            raise ValueError(
+                f"Cannot recover rational from code {self.code} "
+                f"(p={self.p}, k={self.k}). PEV requires successful recovery."
+            )
+        num, den = rational
+        factors: Dict[int, int] = {}
+        
+        # Factor numerator
+        self._factor_into(num, factors, sign=1)
+        # Factor denominator (subtracting exponents)
+        self._factor_into(den, factors, sign=-1)
+        
+        # Remove zero-exponent entries
+        return {p: e for p, e in factors.items() if e != 0}
+
+    @staticmethod
+    def _factor_into(n: int, factors: Dict[int, int], sign: int) -> None:
+        """Factor integer n into the PEV dictionary, adding sign * exponent."""
+        if n < 0:
+            n = -n
+        if n <= 1:
+            return
+        # Trial division by small primes
+        d = 2
+        while d * d <= n:
+            while n % d == 0:
+                factors[d] = factors.get(d, 0) + sign
+                n //= d
+            d += 1 if d == 2 else 2  # 2, 3, 5, 7, ...
+        if n > 1:
+            factors[n] = factors.get(n, 0) + sign
+
+    def pev_str(self) -> str:
+        """Human-readable PEV string like '2^2 · 3^3'."""
+        pev = self.pev()
+        if not pev:
+            return "1"
+        pos_terms = []
+        neg_terms = []
+        for p in sorted(pev.keys()):
+            e = pev[p]
+            if e > 0:
+                pos_terms.append(f"{p}^{e}" if e > 1 else str(p))
+            else:
+                neg_terms.append(f"{p}^{abs(e)}" if abs(e) > 1 else str(p))
+        if pos_terms:
+            result = " · ".join(pos_terms)
+        else:
+            result = "1"
+        if neg_terms:
+            result += " / (" + " · ".join(neg_terms) + ")"
+        return result
+
+    # ─── GCD / LCM ───────────────────────────────────────────────────────────
+
+    def gcd(self, other: "HenselCode") -> "HenselCode":
+        """
+        Greatest common divisor of the rationals encoded by two Hensel codes.
+        
+        Recovers both rationals, computes their gcd, and re-encodes.
+        Requires both codes to share the same (p, k).
+        """
+        self._check_compatible(other)
+        r1 = self.to_rational()
+        r2 = other.to_rational()
+        if r1 is None or r2 is None:
+            raise ValueError("Cannot compute gcd: rational recovery failed")
+        a, b = r1
+        c, d = r2
+        g_num = math.gcd(abs(a), abs(c))
+        g_den = (b * d) // math.gcd(b, d)
+        return HenselCode.from_rational(g_num, g_den, self.p, self.k)
+
+    def lcm(self, other: "HenselCode") -> "HenselCode":
+        """
+        Least common multiple of the rationals encoded by two Hensel codes.
+        
+        Recovers both rationals, computes their lcm, and re-encodes.
+        Requires both codes to share the same (p, k).
+        """
+        self._check_compatible(other)
+        r1 = self.to_rational()
+        r2 = other.to_rational()
+        if r1 is None or r2 is None:
+            raise ValueError("Cannot compute lcm: rational recovery failed")
+        a, b = r1
+        c, d = r2
+        l_num = (abs(a) * abs(c)) // math.gcd(abs(a), abs(c))
+        l_den = math.gcd(b, d)
+        return HenselCode.from_rational(l_num, l_den, self.p, self.k)
+
+    # ─── Comparison Operations ────────────────────────────────────────────────
+
+    def _to_float_pair(self) -> Tuple[float, bool]:
+        """
+        Convert to a float for comparison. Returns (value, exact_flag).
+        exact is True if the rational was successfully recovered.
+        """
+        rational = self.to_rational()
+        if rational is not None:
+            return (rational[0] / rational[1], True)
+        return (self.code / self.modulus, False)
+
+    def __lt__(self, other: "HenselCode") -> bool:
+        self._check_compatible(other)
+        a, _ = self._to_float_pair()
+        b, _ = other._to_float_pair()
+        return a < b
+
+    def __le__(self, other: "HenselCode") -> bool:
+        self._check_compatible(other)
+        a, _ = self._to_float_pair()
+        b, _ = other._to_float_pair()
+        return a <= b
+
+    def __gt__(self, other: "HenselCode") -> bool:
+        self._check_compatible(other)
+        a, _ = self._to_float_pair()
+        b, _ = other._to_float_pair()
+        return a > b
+
+    def __ge__(self, other: "HenselCode") -> bool:
+        self._check_compatible(other)
+        a, _ = self._to_float_pair()
+        b, _ = other._to_float_pair()
+        return a >= b
+
+    def __abs__(self) -> "HenselCode":
+        """Absolute value: re-encode as positive rational if negative."""
+        rational = self.to_rational()
+        if rational is None:
+            return self
+        num, den = rational
+        return HenselCode.from_rational(abs(num), den, self.p, self.k)
+
+    # ─── Exponentiation ──────────────────────────────────────────────────────
+
+    def __pow__(self, exp: int) -> "HenselCode":
+        """
+        Exact exponentiation: H^exp mod pᵏ.
+        
+        For positive exp: H × H × ... (exp times) mod pᵏ
+        For negative exp: the modular inverse raised to |exp| (iff H is a unit)
+        For exp=0: Hensel code for 1
+        """
+        if not isinstance(exp, int):
+            return NotImplemented
+        if exp == 0:
+            return HenselCode.from_rational(1, 1, self.p, self.k)
+        if exp < 0:
+            if not self.is_unit():
+                raise ValueError(
+                    f"Cannot invert non-unit {self.code} mod {self.p}^{self.k}"
+                )
+            inv = pow(self.code, -1, self.modulus)
+            return HenselCode(pow(inv, -exp, self.modulus), self.p, self.k)
+        return HenselCode(pow(self.code, exp, self.modulus), self.p, self.k)
+
+    # ─── Rational Simplification ──────────────────────────────────────────────
+
+    def simplify(self) -> "HenselCode":
+        """
+        Re-encode the recovered rational in lowest terms.
+        
+        If the rational cannot be recovered (e.g., due to bound constraints),
+        returns self unchanged.
+        """
+        rational = self.to_rational()
+        if rational is None:
+            return self
+        num, den = rational
+        g = math.gcd(abs(num), abs(den))
+        return HenselCode.from_rational(num // g, den // g, self.p, self.k)
+
+    # ─── Arithmetic with integers ─────────────────────────────────────────────
+
+    def __radd__(self, other: int) -> "HenselCode":
+        """int + HenselCode: encode the int and add."""
+        h_other = HenselCode.from_rational(other, 1, self.p, self.k)
+        return h_other.__add__(self)
+
+    def __rsub__(self, other: int) -> "HenselCode":
+        """int - HenselCode: encode the int and subtract."""
+        h_other = HenselCode.from_rational(other, 1, self.p, self.k)
+        return h_other.__sub__(self)
+
+    def __rmul__(self, other: int) -> "HenselCode":
+        """int * HenselCode: encode the int and multiply."""
+        h_other = HenselCode.from_rational(other, 1, self.p, self.k)
+        return h_other.__mul__(self)
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HenselCode):
             return NotImplemented
