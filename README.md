@@ -136,4 +136,34 @@ MIT — see [LICENSE](LICENSE) file.
 
 ---
 
+## pdf-builder Skill Fix (v1.5)
+
+The `\mathbb{...}` (blackboard bold) LaTeX command is **not supported** by matplotlib's
+mathtext parser. The pdf-builder skill (`build_pdf.py`) now includes a pre-processor fix
+that auto-converts `\mathbb{...}` to `\mathbf{...}` which renders correctly:
+
+```python
+# In build_pdf.py _LATEX_PREPROC_PATTERNS:
+(re.compile(r'\\mathbb\{'), r'\\mathbf{'),
+```
+
+This fix is deployed to:
+- **Local:** `~\.deepchat\skills\pdf-builder\scripts\build_pdf.py`
+- **R2:** `qnfo/tools/build_pdf.py`
+- **Reference:** `tools/build_pdf_fixed.py` (this repo)
+
+### Bootstrap Protocol
+
+If the local `build_pdf.py` is missing:
+
+```bash
+# Pull from R2 (--remote required for wrangler v4+)
+npx wrangler r2 object get qnfo/tools/build_pdf.py --remote --file=_build_pdf.py
+
+# Or get the reference copy from this repo
+cp tools/build_pdf_fixed.py _build_pdf.py
+```
+
+---
+
 *Built on mathematics that predates computers themselves. The question is not "if" this is possible, but "when" we decide rounding errors cost more than switching.*
