@@ -558,7 +558,7 @@ the cost of rounding errors exceeds the inertia of the status quo.
 # 10. Data Availability
 
 All source code, test suites, documentation, and build artifacts for this paper are archived on Zenodo
-at [https://doi.org/10.5281/zenodo.20754388](https://doi.org/10.5281/zenodo.20754388). The interactive web demonstration is deployed at
+at [https://doi.org/10.5281/zenodo.20756222](https://doi.org/10.5281/zenodo.20756222). The interactive web demonstration is deployed at
 \texttt{hensel-code.pages.dev}. The GitHub repository is at \texttt{github.com/rwnq8/hensel-code-system}.
 
 # References
