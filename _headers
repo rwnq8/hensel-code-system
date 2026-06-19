@@ -1,0 +1,8 @@
+# Cloudflare Pages headers
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+# Cache static assets
+/demo/*
+  Cache-Control: public, max-age=86400
