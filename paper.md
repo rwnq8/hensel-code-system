@@ -4,20 +4,19 @@ author: "Rowan Quni-Gudzinas (QNFO/QWAV)"
 date: "2026-06-18"
 license: "QNFO Unified License Agreement (QNFO-ULA)"
 abstract: >
-  All non-trivial absolute values on the rational numbers $\mathbb{Q}$ complete to exactly one of two fields:
-  the real numbers $\mathbb{R}$ (Ostrowski, 1916) or the $p$-adic numbers $\mathbb{Q}_p$. Contemporary digital
+  All non-trivial absolute values on the rational numbers \mathbb{Q} complete to exactly one of two fields:
+  the real numbers \mathbb{R} (Ostrowski, 1916) or the p-adic numbers \mathbb{Q}_p. Contemporary digital
   computation lives entirely within the real completion, accepting its inherent approximation errors—the
   Patriot missile time-drift (1991, 28 fatalities), the Ariane 5 disintegration ($370M loss, 1996), and the
   perennial $0.1 + 0.2 \neq 0.3$ failure of IEEE 754 binary floating-point. We present a computation-ready
-  framework that bridges this Ostrowski gap by implementing Hensel codes—finite $p$-adic representations of
+  framework that bridges this Ostrowski gap by implementing Hensel codes—finite p-adic representations of
   rational numbers—as exact arithmetic primitives requiring zero new hardware and zero external dependencies.
   Our Python reference implementation (518 lines, standard library only) and isomorphic JavaScript port (BigInt)
   demonstrate that Hensel-code addition, subtraction, multiplication, and division are exact integer operations
-  modulo $p^k$, eliminating rounding error for all rational operands with denominators coprime to $p$. We
-  further organize the $p$-adic integers into the Bruhat-Tits tree, providing an ultrametric hierarchy that
-  embeds arbitrary dendrograms and enables $O(\log n)$ comparison of encoded values. The framework is deployed
-  as an interactive web demonstration at \texttt{hensel-code.pages.dev} and as an open-source Python library
-  at \texttt{github.com/rwnq8/hensel-code-system}. All artifacts are archived on Zenodo with a complete
+  modulo p^k, eliminating rounding error for all rational operands with denominators coprime to p. We
+  further organize the p-adic integers into the Bruhat-Tits tree, providing an ultrametric hierarchy that
+  embeds arbitrary dendrograms and enables O(log n) comparison of encoded values. The framework is deployed
+  as an interactive web demonstration and as an open-source Python library. All artifacts are archived on Zenodo with a complete
   reproduction manifest.
 ---
 
